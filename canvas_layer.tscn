@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://ctcp2nwyi7qs5"]
+
+[ext_resource type="Texture2D" uid="uid://bkwur13mscbbt" path="res://Assets/Models/—Pngtree—arrow right button game ui_20087241.png" id="1_v2lfg"]
+[ext_resource type="Texture2D" uid="uid://cwu1daoqdrd7e" path="res://Assets/Models/kindpng_1952338.png" id="2_tg4cr"]
+
+[node name="CanvasLayer" type="CanvasLayer" unique_id=1007377134]
+
+[node name="Control" type="Control" parent="." unique_id=1850999260]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Forward" type="TouchScreenButton" parent="Control" unique_id=1764205793]
+position = Vector2(295, 678)
+rotation = -1.5707964
+scale = Vector2(0.092, 0.092)
+texture_normal = ExtResource("1_v2lfg")
+texture_pressed = ExtResource("1_v2lfg")
+passby_press = true
+action = "move_forward"
+
+[node name="Backward" type="TouchScreenButton" parent="Control" unique_id=124266821]
+position = Vector2(527, 727)
+rotation = 1.5707964
+scale = Vector2(0.089, 0.089)
+texture_normal = ExtResource("1_v2lfg")
+texture_pressed = ExtResource("1_v2lfg")
+passby_press = true
+action = "move_backward"
+
+[node name="Left" type="TouchScreenButton" parent="Control" unique_id=2079412290]
+position = Vector2(402, 809.1039)
+rotation = -3.1415925
+scale = Vector2(0.11016537, 0.08364157)
+texture_normal = ExtResource("1_v2lfg")
+texture_pressed = ExtResource("1_v2lfg")
+passby_press = true
+action = "move_left"
+
+[node name="Sprint" type="TouchScreenButton" parent="Control" unique_id=473078021]
+position = Vector2(439, 149.00003)
+rotation = -3.1415925
+scale = Vector2(0.155, 0.155)
+texture_normal = ExtResource("2_tg4cr")
+texture_pressed = ExtResource("2_tg4cr")
+passby_press = true
+action = "sprint"
+
+[node name="Right" type="TouchScreenButton" parent="Control" unique_id=221306273]
+position = Vector2(428, 598)
+scale = Vector2(0.10679999, 0.088)
+texture_normal = ExtResource("1_v2lfg")
+texture_pressed = ExtResource("1_v2lfg")
+passby_press = true
+action = "move_right"
+
+[node name="Jump" type="TouchScreenButton" parent="Control" unique_id=884120625]
+position = Vector2(1687, 194.99997)
+rotation = -1.5707964
+scale = Vector2(0.065, 0.065)
+texture_normal = ExtResource("1_v2lfg")
+texture_pressed = ExtResource("1_v2lfg")
+passby_press = true
+action = "jump"

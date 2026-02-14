@@ -1,0 +1,163 @@
+[gd_scene format=3 uid="uid://b32jsi4rd414c"]
+
+[ext_resource type="PackedScene" uid="uid://jdn2ajfsajvn" path="res://coin.tscn" id="3_hn12h"]
+[ext_resource type="MeshLibrary" uid="uid://dhdlfd4igyxm2" path="res://Resources/WORLD-BLOCK-V1.tres" id="4_ihfcg"]
+[ext_resource type="PackedScene" uid="uid://6ix4frhkwjfx" path="res://MAINplayer.tscn" id="5_rka8t"]
+[ext_resource type="PackedScene" uid="uid://badr77s5d8bs3" path="res://Platform5x2.tscn" id="6_5hph3"]
+[ext_resource type="PackedScene" uid="uid://ctcp2nwyi7qs5" path="res://canvas_layer.tscn" id="6_j7kpp"]
+
+[sub_resource type="Environment" id="Environment_rka8t"]
+glow_enabled = true
+fog_enabled = true
+volumetric_fog_enabled = true
+volumetric_fog_emission_energy = 1024.0
+volumetric_fog_detail_spread = 6.0
+
+[sub_resource type="GDScript" id="GDScript_rka8t"]
+resource_name = "Player"
+script/source = "extends CharacterBody3D
+
+var speed: float
+
+@export var WALK_SPEED := 5.0
+@export var SPRINT_SPEED := 8.0
+@export var JUMP_VELOCITY := 5.0
+@export var gravity: float = ProjectSettings.get_setting(\"physics/3d/default_gravity\")
+@export var SENSITIVITY := 0.0027
+
+# ---- HEAD BOB ----
+const BOB_FREQ := 2.0
+const BOB_AMP_Y := 0.14   # ↑ more up/down movement
+const BOB_AMP_X := 0.06   # side sway (optional)
+var t_bob := 0.0
+var camera_start_pos: Vector3
+
+# ---- FOV ----
+@export var normal_fov := 75.0
+@export var sprint_fov := 90.0
+@export var fov_speed := 8.0
+
+@onready var head: Node3D = $Head
+@onready var camera: Camera3D = $Head/Camera3D
+
+func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	camera_start_pos = camera.position
+	camera.fov = normal_fov
+
+func _unhandled_input(event):
+	if event is InputEventMouseMotion:
+		head.rotate_y(-event.relative.x * SENSITIVITY)
+		camera.rotate_x(-event.relative.y * SENSITIVITY)
+		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-40), deg_to_rad(60))
+
+func _physics_process(delta: float) -> void:
+	# ----- GRAVITY -----
+	if not is_on_floor():
+		velocity.y -= gravity * delta
+
+	# ----- JUMP -----
+	if Input.is_action_just_pressed(\"jump\") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	# ----- SPRINT -----
+	var is_sprinting := Input.is_action_pressed(\"sprint\") and is_on_floor()
+	speed = SPRINT_SPEED if is_sprinting else WALK_SPEED
+
+	# ----- MOVEMENT -----
+	var input_dir = Input.get_vector(\"move_left\", \"move_right\", \"move_forward\", \"move_backward\")
+	var direction = (head.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+
+	if is_on_floor():
+		if direction:
+			velocity.x = direction.x * speed
+			velocity.z = direction.z * speed
+		else:
+			velocity.x = lerp(velocity.x, 0.0, delta * 7.0)
+			velocity.z = lerp(velocity.z, 0.0, delta * 7.0)
+	else:
+		velocity.x = lerp(velocity.x, direction.x * speed, delta * 4.0)
+		velocity.z = lerp(velocity.z, direction.z * speed, delta * 4.0)
+
+	# ----- HEAD BOB -----
+	t_bob += delta * Vector3(velocity.x, 0, velocity.z).length() * float(is_on_floor())
+	camera.position = camera_start_pos + _headbob(t_bob)
+
+	# ----- FOV -----
+	var target_fov := sprint_fov if is_sprinting else normal_fov
+	camera.fov = lerp(camera.fov, target_fov, delta * fov_speed)
+
+	move_and_slide()
+
+func _headbob(time: float) -> Vector3:
+	var pos := Vector3.ZERO
+	pos.y = sin(time * BOB_FREQ) * BOB_AMP_Y
+	pos.x = cos(time * BOB_FREQ / 2.0) * BOB_AMP_X
+	return pos
+
+func _on_fallzone_body_entered(body: Node3D) -> void:
+	get_tree().change_scene_to_file(\"res://level_1.tscn\")
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rka8t"]
+size = Vector3(120.45581, 10.731506, 154.62573)
+
+[node name="LEVEL 1" type="Node3D" unique_id=1345313607]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1028098925]
+environment = SubResource("Environment_rka8t")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1793259329]
+transform = Transform3D(0.43054256, 0.61829954, 0.65752476, 0, -0.7285026, 0.68504316, 0.90257025, -0.29494023, -0.31365135, 0, 5.8183017, -8.654917)
+shadow_enabled = true
+
+[node name="MAINplayer" parent="." unique_id=708431467 instance=ExtResource("5_rka8t")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.7053623, 1, 2.4689746)
+visible = false
+collision_mask = 30
+script = SubResource("GDScript_rka8t")
+WALK_SPEED = 5.0
+SPRINT_SPEED = 8.0
+JUMP_VELOCITY = 9.5
+gravity = 22.0
+SENSITIVITY = 0.0027
+
+[node name="coin2" parent="." unique_id=1463201612 instance=ExtResource("3_hn12h")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -18.965164, 12.072044, -39.216602)
+
+[node name="coin3" parent="." unique_id=1899403539 instance=ExtResource("3_hn12h")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 22.881659, 8.162126, -44.96355)
+
+[node name="coin4" parent="." unique_id=515086983 instance=ExtResource("3_hn12h")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 26.671898, 8.011193, -32.96344)
+
+[node name="GridMap" type="GridMap" parent="." unique_id=529696194]
+mesh_library = ExtResource("4_ihfcg")
+collision_layer = 2
+collision_mask = 13
+data = {
+"cells": PackedInt32Array(-1, 65535, 1048576, -65535, 65535, 1048576, -65536, 65535, 1048576, -65535, 0, 1048576, -65536, 0, 1048576, -1, 0, 1048576, -2, 0, 1048576, -2, 65535, 1048576, -2, 65534, 1048576, -1, 65534, 1048576, -1, 65533, 1048576, -65536, 65533, 1048576, -65536, 65534, 1048576, -65535, 65534, 1048576, -65534, 65534, 1048576, -65534, 65535, 1048576, -65534, 0, 1048576, -65534, 1, 1048576, -65535, 1, 1048576, -65536, 1, 1048576, -1, 1, 1048576, -2, 1, 1048576, -3, 1, 1048576, -3, 0, 1048576, -4, 65534, 1048576, -3, 65535, 1048576, -3, 65534, 1048576, -3, 65533, 1048576, -2, 65533, 1048576, -65535, 65533, 1048576, -65534, 65533, 1048576, -3, 65532, 1048576, -2, 65532, 1048576, -1, 65532, 1048576, -65536, 65532, 1048576, -65535, 65532, 1048576, -65534, 65532, 1048576, -4, 65532, 1048576, -4, 65533, 1048576, -4, 65535, 1048576, -4, 0, 1048576, -4, 1, 1048576, -4, 2, 5, -3, 2, 5, -2, 2, 1048576, -1, 2, 1048576, -65536, 2, 1048576, -65535, 2, 5, -65534, 2, 5, -65533, 2, 1048582, -65533, 1, 1048581, -65533, 0, 1048581, -65533, 65534, 655360, -65533, 65535, 655360, -65533, 65533, 655360, -65534, 65531, 1048576, -65535, 65531, 1048576, -65536, 65531, 1048576, -1, 65531, 1048576, -2, 65531, 1048576, -3, 65531, 1048576, -5, 2, 6, -5, 1, 1441797, -5, 0, 1441797, -5, 65535, 655360, -5, 65534, 655360, -5, 65533, 655360, -5, 65532, 1441797, -4, 65531, 1048576, -65533, 65531, 1048581, -5, 65531, 1441797, -65533, 65532, 1048581, -65534, 65530, 655365, -4, 65530, 655365, -3, 65530, 655365, -2, 65530, 655360, -1, 65530, 655360, -65536, 65530, 655360, -65535, 65530, 655365, -65533, 65530, 655366, -5, 65530, 1441798, 65534, 65535, 655363, 65534, 65534, 655363, 65534, 65533, 655363, 65535, 65533, 655363, 0, 65533, 655363, 0, 65535, 655363, 0, 65534, 655363, 65535, 65534, 655363, 65535, 65535, 655363, 0, 65529, 655362, 65535, 65529, 655362, 65534, 65529, 655362, 0, 65528, 655361, 65535, 65528, 655361, 65534, 65528, 655361, 131070, 65527, 655362, 131071, 65527, 655362, 65536, 65527, 655362, 131070, 65526, 655361, 131071, 65526, 655361, 65536, 65526, 655361, 65534, 65527, 655360, 65535, 65527, 655360, 0, 65527, 655360, 0, 65526, 655360, 65535, 65526, 655360, 65534, 65526, 655360, 131067, 65517, 0, 131068, 65517, 0, 131069, 65517, 0, 131070, 65517, 1441792, 131071, 65517, 1441792, 65536, 65517, 1441792, 65537, 65517, 0, 65538, 65517, 0, 65539, 65517, 0, 131067, 65516, 0, 65539, 65516, 0, 65538, 65516, 0, 65537, 65516, 0, 131071, 65516, 0, 65536, 65516, 0, 131070, 65516, 0, 131069, 65516, 0, 131068, 65516, 0, 65539, 65515, 0, 65538, 65515, 0, 65537, 65515, 0, 65536, 65515, 0, 131071, 65515, 0, 131070, 65515, 0, 131069, 65515, 0, 131068, 65515, 0, 131067, 65515, 0, 65539, 65514, 0, 65538, 65514, 0, 65537, 65514, 0, 65536, 65514, 0, 131071, 65514, 0, 131070, 65514, 0, 131069, 65514, 0, 131068, 65514, 0, 131067, 65514, 0, 262136, 65515, 3, 196601, 65514, 3, 327674, 65515, 3, 393205, 65515, 3, 393205, 65516, 3, 393205, 65517, 3, 393206, 65515, 3, 393206, 65516, 3, 393206, 65517, 3, 393207, 65515, 3, 393207, 65516, 3, 393207, 65517, 3, 393208, 65516, 1441794, 131070, 65525, 1441792, 131071, 65525, 1441792, 65536, 65525, 1441792, 65540, 65516, 1441793, 65540, 65515, 1441793, 65541, 65516, 1441794, 65541, 65515, 1441794, 6, 65516, 1441793, 6, 65515, 1441793, 5, 65515, 1441792, 4, 65515, 1441792, 4, 65516, 1441792, 5, 65516, 1441792, 7, 65516, 1441795, 7, 65515, 1441795, 65544, 65517, 1441795, 65544, 65514, 1441795, 131081, 65515, 1441795, 131082, 65517, 1441795, 196618, 65514, 1441795, 196618, 65513, 1441795, 196618, 65512, 1441795, 196619, 65512, 1441795, 196620, 65512, 1441795, 196619, 65513, 1441795, 196620, 65513, 1441795, 196620, 65514, 1441795, 196619, 65514, 1441795, 196620, 65518, 1441795, 196620, 65519, 1441795, 196620, 65520, 1441795, 196621, 65518, 1441795, 196621, 65519, 1441795, 196621, 65520, 1441795, 196622, 65518, 1441795, 196622, 65519, 1441795, 196622, 65520, 1441795)
+}
+metadata/_editor_floor_ = Vector3(0, 1, 0)
+
+[node name="movingPlatforms" type="Node3D" parent="." unique_id=658405418]
+
+[node name="Platform5x2" parent="movingPlatforms" unique_id=1467109084 instance=ExtResource("6_5hph3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 3, -34)
+a = Vector3(-1, 3, -34)
+b = Vector3(-1, 3, -24)
+time = 3.5
+
+[node name="Fallzone" type="Area3D" parent="." unique_id=1430483761]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -47.09337, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Fallzone" unique_id=1505939745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2220535, 4.865753, -3.6964111)
+shape = SubResource("BoxShape3D_rka8t")
+
+[node name="CanvasLayer" parent="." unique_id=1007377134 instance=ExtResource("6_j7kpp")]
+
+[connection signal="area_shape_entered" from="coin2" to="coin2" method="_on_area_shape_entered"]
+[connection signal="area_shape_entered" from="coin3" to="coin3" method="_on_area_shape_entered"]
+[connection signal="area_shape_entered" from="coin4" to="coin4" method="_on_area_shape_entered"]
+[connection signal="body_entered" from="Fallzone" to="MAINplayer" method="_on_fallzone_body_entered"]

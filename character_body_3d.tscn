@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://cmnwgqmwafgb5"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bu0v1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bu0v1"]
+albedo_color = Color(0.2666669, 0, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iwpo4"]
+material = SubResource("StandardMaterial3D_bu0v1")
+
+[node name="steve" type="CharacterBody3D"]
+collision_mask = 30
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_bu0v1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_iwpo4")
+
+[node name="Camera_Controller" type="Node3D" parent="."]
+top_level = true
+
+[node name="Camera_Targeter" type="Node3D" parent="Camera_Controller"]
+transform = Transform3D(1, 0, 0, 0, 0.9517874, 0.3067587, 0, -0.3067587, 0.9517874, 0, 1.7460139, 3.6238966)
+
+[node name="Camera3D" type="Camera3D" parent="Camera_Controller/Camera_Targeter"]
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+collision_mask = 2

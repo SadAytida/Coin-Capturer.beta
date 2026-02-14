@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://jdn2ajfsajvn"]
+
+[ext_resource type="Script" uid="uid://dvvd6f6x1e2xu" path="res://coin.gd" id="1_d5gmh"]
+[ext_resource type="ArrayMesh" uid="uid://c23ilm2m0hivk" path="res://Assets/Models/indian rupee.res" id="2_0t63x"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_d5gmh"]
+height = 0.15
+radius = 0.3
+
+[node name="coin" type="Area3D"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+collision_layer = 4
+script = ExtResource("1_d5gmh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1.3207192e-08, 0.35057157, 1.1441713e-15, -1.3207192e-08, 6.69832e-16, -0.29941383, -0.30214533, -1.532397e-08, 1.3087794e-08, 0, 0, 0)
+mesh = ExtResource("2_0t63x")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CylinderShape3D_d5gmh")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
